@@ -1,0 +1,202 @@
+/*
+ * Danco Painting LLC — design tokens
+ * Authoritative source: BRAND-DIRECTION.md (WP2), visual direction: "Colour
+ * Card" restyle (KIMI-UI pass, 2026-08).
+ *
+ * RULE FOR ALL PAGE BUILDS: no raw hex, no raw px font size, no raw spacing
+ * value may appear outside this file. Everything references a token. This is
+ * what makes a reskin a token edit instead of a 21-page rewrite, and Daniel has
+ * not confirmed the accent colour yet, so that reversal path must stay cheap.
+ *
+ * THE VISUAL IDEA (replaces the cream-and-rounded-cards system):
+ * The site is set like a painter's colour card crossed with a spec sheet.
+ * Chalk-white ground, warm near-black ink taken from the logo, hairline rules
+ * instead of boxes, big slab numerals, and a small fan-deck of pigment
+ * swatches used as a graphic device. No photography exists, so the material
+ * world of painting (pigment, primer, tape lines, colour chips) supplies the
+ * imagery instead.
+ */
+
+:root {
+  /* ---- Colour -------------------------------------------------------------
+   * Derived from the logo's own black-on-white ground. The page ground moved
+   * off cream (#F8F5EF) to a chalk white: cream + serif + one muted accent is
+   * the most recognizable template signature on the web, and the client read
+   * it as machine-made. Chalk keeps the "primer" note without the tell.
+   */
+  --c-ink:         #191712;  /* body text, dark sections, primary button      ~15.9:1 on paper */
+  --c-ink-soft:    #575144;  /* secondary text, meta                          ~7.1:1 on paper  */
+  --c-paper:       #F6F5F1;  /* page ground, chalk white, the "primer" note */
+  --c-paper-warm:  #EAE8DF;  /* chalk band, mats, placeholder fills */
+  --c-accent:      #3D5A46;  /* the single accent, deep heritage green        ~6.9:1 on paper  */
+  --c-accent-deep: #2C4234;  /* accent hover / pressed                        ~9.6:1 on paper  */
+  --c-line:        #D5D0C2;  /* rules, borders, dividers */
+
+  /* Structural pigments. Each colour has one fixed service meaning on the
+   * homepage; the legacy aliases remain for the other pages. */
+  --c-pigment-ink:    #191712;
+  --c-pigment-green:  #3D5A46;
+  --c-pigment-ochre:  #A9762E;
+  --c-pigment-sienna: #7E4A35;
+  --c-pigment-bone:   #D9D2C0;
+
+  --pigment-ink:    var(--c-pigment-ink);
+  --pigment-green:  var(--c-pigment-green);
+  --pigment-ochre:  var(--c-pigment-ochre);
+  --pigment-sienna: var(--c-pigment-sienna);
+  --pigment-bone:   var(--c-pigment-bone);
+
+  /* Deliberate painted seam, never a section hairline. */
+  --cut-line:       3px;
+  --cut-line-color: var(--c-pigment-ochre);
+
+  /* Hairlines. Solid borders at 1px read as UI chrome; a translucent ink or
+   * paper hairline reads as a printed rule. */
+  --c-rule:         rgb(25 23 18 / 0.28);   /* rules on paper */
+  --c-rule-strong:  var(--c-ink);           /* heavy spec rules on paper */
+  --c-rule-inverse: rgb(246 245 241 / 0.30);/* rules on ink */
+
+  /* Semantic aliases. Components reference these, not the raw colour tokens,
+   * so the accent can be swapped without touching component CSS. */
+  --c-text:            var(--c-ink);
+  --c-text-muted:      var(--c-ink-soft);
+  --c-bg:              var(--c-paper);
+  --c-bg-alt:          var(--c-paper-warm);
+  --c-bg-inverse:      var(--c-ink);
+  --c-text-inverse:    var(--c-paper);
+  --c-border:          var(--c-line);
+  --c-focus:           var(--c-accent);
+
+  /* ---- Type ---------------------------------------------------------------
+   * Zilla Slab is DISPLAY ONLY: h1 and h2 plus the spec numerals. --t-h3 and
+   * everything under it is Plex Sans. Zilla has no minimum-size floor, unlike
+   * the Bodoni it replaced; its serifs are blunt rectangles that hold together
+   * small. Self-hosted woff2, never a Google Fonts link: a render-blocking
+   * third-party font request is the usual reason the Lighthouse mobile perf
+   * target is missed.
+   *
+   * Only weights 500 and 600 exist as real cuts. Adding a display rule at any
+   * other weight makes the browser synthesise it. Ship the cut instead.
+   *
+   * The scale is deliberately wide: a spec sheet lives on the contrast between
+   * a very large display voice and small, precise functional type.
+   */
+  --f-display: "Zilla Slab", "Rockwell", "Roboto Slab", Georgia, "Times New Roman", serif;
+  --f-body:    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --t-display: 4rem;     /* 64px — hero headline only */
+  --t-h1:      3rem;     /* 48px — page H1 */
+  --t-h2:      2.25rem;  /* 36px — section headings */
+  --t-h3:      1.3125rem;/* 21px — Plex Sans */
+  --t-lede:    1.25rem;  /* 20px — hero and section lede */
+  --t-body:    1.0625rem;/* 17px */
+  --t-small:   0.9375rem;/* 15px */
+  --t-micro:   0.8125rem;/* 13px */
+  --t-num:     3.5rem;   /* 56px — display spec numerals (steps, the 60-mile stat) */
+
+  --lh-display: 1.05;
+  --lh-heading: 1.15;
+  --lh-body:    1.6;
+
+  --w-regular:  400;
+  --w-medium:   500;
+  --w-semibold: 600;
+  --w-bold:     700;
+
+  --ls-display: -0.02em;
+  --ls-micro:    0.12em;  /* small-caps spec labels */
+
+  --measure: 62ch;        /* max line length for body copy */
+  --link-underline-thickness: 0.08em;
+  --link-underline-offset:    0.2em;
+
+  /* ---- Space --------------------------------------------------------------
+   * 4px base, geometric-ish. Use these, not arbitrary values.
+   */
+  --s-1:  0.25rem;  /*  4px */
+  --s-2:  0.5rem;   /*  8px */
+  --s-3:  0.75rem;  /* 12px */
+  --s-4:  1rem;     /* 16px */
+  --s-5:  1.5rem;   /* 24px */
+  --s-6:  2rem;     /* 32px */
+  --s-7:  3rem;     /* 48px */
+  --s-8:  4rem;     /* 64px */
+  --s-9:  6rem;     /* 96px */
+
+  /* Homepage rhythm tiers. --section-y stays as the standard legacy default
+   * for pages that have not yet adopted explicit tiers. */
+  --section-y-hero:     112px;
+  --section-y-major:     96px;
+  --section-y-standard:  72px;
+  --section-y-tight:     56px;
+  --section-y: var(--section-y-standard);
+
+  /* ---- Shape --------------------------------------------------------------
+   * Sharp. A colour card and a spec sheet are cut, not rounded: 2px is the
+   * most corners get. The old system's 6px rounded boxes are gone with it.
+   */
+  --radius:       2px;
+  --radius-sm:    2px;
+  --border-width: 1px;
+
+  /* Restrained. A chalk-and-ink system is undermined by heavy grey shadows;
+   * the only shadow left is the faint lift on the estimate form sheet. */
+  --shadow-sm: 0 1px 2px rgb(25 23 18 / 0.06);
+  --shadow-md: 0 10px 30px rgb(25 23 18 / 0.18);
+
+  /* ---- Layout -------------------------------------------------------------- */
+  --container:        1160px;
+  --container-narrow: 760px;
+  --gutter:           var(--s-5);
+
+  /* Component dimensions stay here so shared styles contain no raw spacing. */
+  --tap-target:        2.75rem;
+  --control-min:       3rem;
+  --focus-width:       0.125rem;
+  --focus-offset:      0.125rem;
+  --header-logo-width: 12rem;
+  --footer-logo-width: 15rem;
+  --hero-media-min:    18rem;
+  --hero-media-fluid:  56vw;
+  --hero-media-max:    34rem;
+  --textarea-max:      16rem;
+  --form-column-min:   18rem;
+  --footer-column-min: 10rem;
+  --menu-icon-size:    1.5rem;
+  --menu-line-width:   1.125rem;
+  --menu-line-height:  0.125rem;
+  --placeholder-mark:  7rem;
+  --paint-chip-swatch-height: 96px;
+  --swatch-height:     0.875rem;  /* fan-deck strip edging the hero and footer */
+  --tick-width:        1.5rem;    /* pigment tick before spec labels */
+  --z-header:          10;
+
+  /* ---- Motion --------------------------------------------------------------- */
+  --ease:     cubic-bezier(0.2, 0, 0, 1);
+  --duration: 180ms;
+}
+
+@media (max-width: 768px) {
+  :root {
+    /* These sizes were originally pinned to a 28px minimum because the old
+     * display face was a didone whose hairlines broke up below it. Zilla Slab
+     * has no such floor, so the constraint is gone and the values are kept
+     * purely because the mobile rhythm was composed around them. They are now
+     * free to change on design grounds. */
+    --t-display: 2.5rem;   /* 40px */
+    --t-h1:      2rem;     /* 32px */
+    --t-h2:      1.75rem;  /* 28px */
+    --t-num:     2.5rem;   /* 40px */
+    --section-y-hero:     72px;
+    --section-y-major:    64px;
+    --section-y-standard: 48px;
+    --section-y-tight:    40px;
+    --section-y: var(--section-y-standard);
+    --paint-chip-swatch-height: 72px;
+    --gutter:    var(--s-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration: 1ms; }
+}

@@ -1,0 +1,19 @@
+# Danco Painting LLC
+#
+# PREVIEW POSTURE. This build is not launched. Every page also carries
+# <meta name="robots" content="noindex, nofollow">, and the two must stay in
+# agreement: the WP17 validator fails the build if this file stops saying
+# "Disallow: /" while the pages still say noindex.
+#
+# AT LAUNCH, both flip together in one deliberate step:
+#   1. Remove the "Disallow: /" line below and uncomment the Allow line.
+#   2. Remove the noindex meta from all 21 pages.
+#   3. Leave the Sitemap line as is; it is already correct.
+# Launching one without the other either hides the live site from search or
+# exposes an unfinished preview. See docs/domain-and-launch.md.
+
+User-agent: *
+Disallow: /
+# Allow: /
+
+Sitemap: https://dancopainting.com/sitemap.xml

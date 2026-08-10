@@ -1,0 +1,1546 @@
+/*
+ * Danco Painting LLC -- shared site stylesheet
+ * Owner: WP7, restyled in the KIMI-UI pass (2026-08). Built on
+ * assets/css/tokens.css; the visual idea is documented at the top of that
+ * file ("Colour Card": chalk ground, ink, hairline rules, slab display
+ * type, pigment swatches as the only decorative device).
+ *
+ * RULES THIS FILE FOLLOWS
+ * - No raw hex, no raw px font size, no raw spacing value. Everything below
+ *   reads a custom property from tokens.css. tokens.css stays the single
+ *   source of truth for values; this file only turns tokens into components.
+ * - Mobile-first. Base rules target a narrow viewport; min-width media
+ *   queries layer on progressively larger layouts (checked at 375 / 768 /
+ *   1440 per WP7's acceptance criteria).
+ * - No external @import, @font-face, or url() outside this project's own
+ *   assets/ folder. Pages here get inlined into a single self-contained HTML
+ *   file per page for Wix import later, so nothing may depend on a network
+ *   fetch this file's author does not control. Fonts are self-hosted under
+ *   assets/fonts/ and wired up via assets/css/fonts.css; never link Google
+ *   Fonts or any other CDN.
+ * - tokens.css has no error/danger colour token, and this file must not
+ *   invent a raw hex to make one. Invalid form states are communicated with
+ *   a heavier border plus explicit error text (see "Forms" below), never by
+ *   colour alone -- which is also the correct WCAG 1.4.1 behaviour, not just
+ *   a workaround.
+ * - This file does NOT @import tokens.css. @import is a serialized,
+ *   render-blocking fetch: the importing stylesheet cannot finish loading
+ *   until the imported one round-trips separately, so anything relying on a
+ *   token can paint with unresolved custom properties on a slow connection.
+ *   _shared/head-meta.html links tokens.css and site.css as two separate
+ *   <link rel="stylesheet"> tags instead, so both fetch in parallel.
+ *   tokens.css must still be linked before this file in every page's <head>
+ *   so the cascade order matches.
+ */
+
+/* ---------------------------------------------------------------------
+   Reset & base elements
+   --------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--f-body);
+  font-size: var(--t-body);
+  font-weight: var(--w-regular);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-paper);
+}
+
+img,
+svg,
+picture {
+  max-width: 100%;
+  display: block;
+}
+
+h1,
+h2 {
+  font-family: var(--f-display);
+  font-weight: var(--w-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-display);
+  margin: 0 0 var(--s-4);
+  max-width: var(--measure);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--t-h1);
+}
+
+h2 {
+  font-size: var(--t-h2);
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--f-body);
+  font-weight: var(--w-semibold);
+  line-height: var(--lh-heading);
+  margin: 0 0 var(--s-3);
+}
+
+h3 {
+  font-size: var(--t-h3);
+}
+
+h4,
+h5,
+h6 {
+  font-size: var(--t-body);
+}
+
+p {
+  margin: 0 0 var(--s-4);
+  max-width: var(--measure);
+}
+
+a {
+  color: var(--c-accent);
+  text-decoration-thickness: var(--link-underline-thickness);
+  text-underline-offset: var(--link-underline-offset);
+}
+
+a:hover {
+  color: var(--c-accent-deep);
+}
+
+ul,
+ol {
+  margin: 0 0 var(--s-4);
+  padding-left: var(--s-5);
+}
+
+address {
+  font-style: normal;
+}
+
+button {
+  font-family: inherit;
+}
+
+hr {
+  border: none;
+  border-top: var(--border-width) solid var(--c-rule);
+  margin: var(--s-6) 0;
+}
+
+:focus-visible {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: var(--focus-offset);
+}
+
+/* On dark grounds the green focus ring falls below 3:1 against the
+   background, so the ring switches to paper there. */
+.site-header :focus-visible,
+.site-footer :focus-visible,
+.hero__band :focus-visible,
+.section-ground--ink :focus-visible,
+.section-ground--accent :focus-visible,
+.card--featured :focus-visible {
+  outline-color: var(--c-paper);
+}
+
+/* ---------------------------------------------------------------------
+   Layout primitives
+   --------------------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.container--narrow {
+  max-width: var(--container-narrow);
+}
+
+.section {
+  padding-block: var(--section-y);
+}
+
+/* The three legacy section modifiers were removed once
+ * ART-SPEC-v2-INNER put explicit section-ground--* classes on all 21 pages.
+ * Their grounds now live in the "explicit grounds" block further down. The
+ * dark-ground focus-ring fix and the trust-bar separator rule were rewired to
+ * section-ground--ink / --accent rather than deleted with them. */
+
+.section__heading {
+  margin-bottom: var(--s-6);
+}
+
+/* Spec labels. The old system put a letterspaced green eyebrow above every
+   heading, mechanically. The label stays only where the copy carries one,
+   but it now reads as a spec-sheet annotation: small, quiet ink, keyed by a
+   short pigment tick instead of shouting in accent colour. */
+/* Section eyebrows are HIDDEN sitewide as of 2026-08-10, after client review.
+ *
+ * An uppercase letterspaced label above nearly every heading is one of the
+ * most recognizable machine-generated-layout tells, and the markup carries 73
+ * of them across the 21 pages. They restate the heading directly beneath them,
+ * so removing them costs no information and quiets the page considerably.
+ *
+ * Hidden in CSS rather than stripped from 21 files so the decision is
+ * reversible in one line, and so the fragment-consistency check across pages
+ * is not disturbed. The hero's own context line (.hero__eyebrow) is a
+ * different class and is deliberately kept: it carries the business name and
+ * location, which is real information rather than a restated heading.
+ */
+.eyebrow,
+.card__eyebrow {
+  display: none;
+}
+
+.section-ground--ink .eyebrow,
+.section-ground--accent .eyebrow,
+.hero__band .eyebrow {
+  color: var(--c-text-inverse);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--s-3);
+  top: -3rem;
+  z-index: calc(var(--z-header) + 1);
+  background: var(--c-paper);
+  color: var(--c-ink);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: top var(--duration) var(--ease);
+}
+
+.skip-link:focus {
+  top: var(--s-3);
+}
+
+/* ---------------------------------------------------------------------
+   The fan deck
+   No photography exists and none may be faked, so the site's one decorative
+   device is a strip of pigment swatches, the edge of a painter's colour
+   card. It is pure CSS (hard-stop gradient), aria-free because it is a
+   pseudo-element, and it marks the two brand-black fields every page shares:
+   the bottom edge of the hero band and the top edge of the footer.
+   --------------------------------------------------------------------- */
+
+/* REMOVED 2026-08-10 after client review.
+ *
+ * This was a five-colour hard-stop gradient bar under every hero and above
+ * every footer, intended to read as the edge of a painter's fan deck. It did
+ * not. At full page width, with no photography anywhere else to tie it to the
+ * subject, it read as an arbitrary rainbow band, and it appeared twice on
+ * every one of the 21 pages. A decorative device that has to be explained is
+ * not working.
+ *
+ * The dark hero and dark footer now meet the chalk ground directly. If a
+ * pigment reference returns later it needs to be small, incidental, and tied
+ * to real content, not a full-bleed stripe.
+ */
+
+/* ---------------------------------------------------------------------
+   Buttons
+   Sharp (2px), sentence case, one fill per role. Accent fill is reserved
+   for the single primary conversion action in view, per BRAND-DIRECTION.md.
+   --------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--tap-target);
+  padding-inline: var(--s-5);
+  border-radius: var(--radius);
+  border: var(--border-width) solid transparent;
+  font-family: var(--f-body);
+  font-size: var(--t-body);
+  font-weight: var(--w-semibold);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration) var(--ease),
+    color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.btn--primary {
+  background: var(--c-ink);
+  color: var(--c-paper);
+  border-color: var(--c-ink);
+}
+
+.btn--primary:hover,
+.btn--primary:focus-visible {
+  background: var(--c-accent-deep);
+  border-color: var(--c-accent-deep);
+  color: var(--c-paper);
+}
+
+.btn--secondary {
+  background: transparent;
+  color: currentColor;
+  border-color: currentColor;
+}
+
+.btn--secondary:hover,
+.btn--secondary:focus-visible {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-paper);
+}
+
+.btn--accent {
+  background: var(--c-accent);
+  color: var(--c-paper);
+  border-color: var(--c-accent);
+}
+
+.btn--accent:hover,
+.btn--accent:focus-visible {
+  background: var(--c-accent-deep);
+  border-color: var(--c-accent-deep);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------------
+   Forms
+   Shared control styling for the five-field intake form (INTAKE-
+   CONTRACT.md) and any other form on the site. Labels are always real
+   elements, never placeholder-only text, per BRAND-DIRECTION.md's forms
+   section.
+   --------------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-bottom: var(--s-5);
+}
+
+.field__label {
+  font-family: var(--f-body);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  color: var(--c-text);
+}
+
+.field__hint {
+  font-size: var(--t-micro);
+  color: var(--c-text-muted);
+}
+
+.field__control {
+  min-height: var(--control-min);
+  padding-inline: var(--s-4);
+  padding-block: var(--s-2);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--f-body);
+  font-size: var(--t-body);
+}
+
+.field__control:focus-visible {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: var(--focus-offset);
+  border-color: var(--c-accent);
+}
+
+textarea.field__control {
+  min-height: var(--control-min);
+  max-height: var(--textarea-max);
+  resize: vertical;
+}
+
+/* Invalid state is communicated with border weight and an explicit error
+   message, never by colour alone -- see the file banner for why there is
+   no dedicated error-colour token to draw from. */
+.field--invalid .field__control {
+  border-width: 2px;
+}
+
+.field__error {
+  font-size: var(--t-micro);
+  font-weight: var(--w-semibold);
+  color: var(--c-text);
+}
+
+.field__error::before {
+  content: "Error: ";
+}
+
+.form-grid {
+  display: grid;
+  gap: var(--s-4) var(--s-5);
+  grid-template-columns: 1fr;
+}
+
+/* Two explicit columns rather than auto-fit. auto-fit packed three fields on
+   the first row and orphaned the ZIP field alone on the second, which looked
+   like a mistake on the page's most important element. Pairing them reads as
+   deliberate: name with phone, service with ZIP. */
+@media (min-width: 600px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Honeypot field from INTAKE-CONTRACT.md's anti-abuse rule: visually
+   hidden, unfocusable, never presented to a real visitor. */
+.field--honeypot {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* The form sheet. On an accent or inverse band the form rides on a single
+   sharp paper panel, the way a colour chip sits on its card. */
+.panel {
+  background: var(--c-bg);
+  color: var(--c-text);
+  border-radius: var(--radius);
+  border-top: var(--s-1) solid var(--c-ink);
+  padding: var(--s-6);
+  box-shadow: var(--shadow-md);
+}
+
+.panel a {
+  color: var(--c-accent);
+}
+
+/* ---------------------------------------------------------------------
+   Trust signals
+   BRAND-DIRECTION.md: "one real fact ... not a row of small badges." The
+   lead fact sets at headline scale; the supporting facts set as a ruled
+   spec strip beneath it, not as pills or badges.
+   --------------------------------------------------------------------- */
+
+.trust-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--f-body);
+  font-weight: var(--w-medium);
+  font-size: var(--t-h3);
+}
+
+.trust-bar--compact {
+  font-size: var(--t-small);
+}
+
+/* Trust lead.
+ *
+ * BRAND-DIRECTION.md section 4 requires ONE real fact at headline scale,
+ * and departure 4 names "badge-soup" as the competitor pattern this site
+ * is positioned against. A flat pipe-separated row of equal-weight items
+ * IS that pattern, so the homepage leads with a single headline-scale
+ * proof point and demotes the supporting facts into a ruled spec strip.
+ *
+ * While the Google review count is unverified this slot carries the
+ * literal placeholder verbatim, at full headline scale. That is
+ * deliberate: an unresolved placeholder should be impossible to miss
+ * rather than tucked into small print where it could ship by accident.
+ */
+.trust-lead__fact {
+  font-family: var(--f-display);
+  font-size: var(--t-h2);
+  font-weight: var(--w-medium);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-display);
+  margin: 0 0 var(--s-5);
+  max-width: var(--measure);
+}
+
+.trust-lead__support {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-6);
+  margin: 0;
+  padding: var(--s-4) 0;
+  list-style: none;
+  border-top: var(--border-width) solid var(--c-rule);
+  border-bottom: var(--border-width) solid var(--c-rule);
+  font-family: var(--f-body);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  color: var(--c-text-muted);
+}
+
+.trust-lead__support li {
+  display: inline-block;
+}
+
+.trust-bar__item {
+  display: inline-block;
+}
+
+.trust-bar__sep {
+  color: var(--c-text-muted);
+}
+
+.section-ground--ink .trust-bar__sep,
+.site-footer .trust-bar__sep {
+  color: var(--c-text-inverse);
+  opacity: 0.6;
+}
+
+/* ---------------------------------------------------------------------
+   Hero band
+   No photograph exists, so the hero is what the market never does: a solid
+   ink field with the slab headline set large, keyed by the fan-deck strip
+   on its bottom edge. The measured competitor DNA (research/design-dna.md)
+   shows 11 of 12 sites scrim a headline over a darkened photo; a confident
+   solid band with real type scale is the opposite move.
+   --------------------------------------------------------------------- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero__media {
+  width: 100%;
+  min-height: var(--hero-media-min);
+  height: var(--hero-media-fluid);
+  max-height: var(--hero-media-max);
+  object-fit: cover;
+  display: block;
+}
+
+.hero__band {
+  background: var(--c-bg-inverse);
+  color: var(--c-text-inverse);
+  padding-block: var(--section-y);
+}
+
+.hero__band a {
+  color: var(--c-text-inverse);
+}
+
+.hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-family: var(--f-body);
+  font-size: var(--t-micro);
+  letter-spacing: var(--ls-micro);
+  text-transform: uppercase;
+  font-weight: var(--w-medium);
+  color: var(--c-text-inverse);
+  margin: 0 0 var(--s-5);
+}
+
+.hero__eyebrow::before {
+  content: "";
+  width: var(--tick-width);
+  height: var(--s-1);
+  background: var(--c-accent);
+  flex-shrink: 0;
+}
+
+.hero__headline {
+  font-family: var(--f-display);
+  font-size: var(--t-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  font-weight: var(--w-semibold);
+  margin: 0 0 var(--s-5);
+  max-width: 16ch;
+  text-wrap: balance;
+}
+
+.hero__lede {
+  font-size: var(--t-lede);
+  line-height: var(--lh-body);
+  max-width: var(--measure);
+  margin: 0 0 var(--s-4);
+  opacity: 0.88;
+}
+
+.hero__lede:last-of-type {
+  margin-bottom: var(--s-6);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+
+/* ---------------------------------------------------------------------
+   Cards, spec grids & placeholders
+   The old system answered every content problem with a bordered rounded
+   box in a 3-up grid. Cards are now cut from the page: flush, sharp, keyed
+   by a heavy top rule like a chip on a colour card. The featured card
+   inverts to solid ink instead of drawing a coloured border around itself.
+   --------------------------------------------------------------------- */
+
+.cards {
+  display: grid;
+  gap: var(--s-6) var(--s-5);
+  grid-template-columns: repeat(auto-fit, minmax(var(--form-column-min), 1fr));
+  margin-bottom: var(--s-5);
+}
+
+.card {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+.card--featured {
+  background: var(--c-accent);
+  color: var(--c-text-inverse);
+  border: none;
+  padding: var(--s-5);
+  margin-bottom: var(--s-6);
+}
+
+.card--featured h3 {
+  color: var(--c-text-inverse);
+  font-family: var(--f-display);
+  font-size: var(--t-h2);
+  font-weight: var(--w-medium);
+  letter-spacing: var(--ls-display);
+}
+
+.card--featured p {
+  opacity: 0.88;
+}
+
+.card__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--t-micro);
+  letter-spacing: var(--ls-micro);
+  text-transform: uppercase;
+  font-weight: var(--w-medium);
+  color: var(--c-text-muted);
+  margin: 0;
+}
+
+.card__eyebrow::before {
+  content: "";
+  width: var(--tick-width);
+  height: var(--s-1);
+  background: var(--c-accent);
+  flex-shrink: 0;
+}
+
+.card--featured .card__eyebrow {
+  color: var(--c-text-inverse);
+}
+
+/* A clearly-marked stand-in for a real Danco photo that has not been
+   sourced yet. BRAND-DIRECTION.md and COPY-PLATFORM.md both require any
+   missing photo to read as an honest placeholder, never as stock
+   presented as the client's own work. Set as a cut mat, not a dashed
+   bounding box. */
+.media-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  aspect-ratio: 4 / 3;
+  background: var(--c-bg);
+  border: var(--border-width) solid var(--c-rule);
+  border-radius: 0;
+  color: var(--c-text-muted);
+  font-family: var(--f-body);
+  font-size: var(--t-small);
+  text-align: center;
+  padding: var(--s-4);
+}
+
+.media-placeholder__icon {
+  width: var(--placeholder-mark);
+  height: var(--placeholder-mark);
+  opacity: 0.35;
+}
+
+/* ---------------------------------------------------------------------
+   Steps (numbered spec list, homepage "How Your Estimate Starts")
+   Big slab numerals carry the sequence; the written "Step N" labels
+   stay in the markup for screen readers. On the ink band each item is
+   keyed by a green tape line.
+   --------------------------------------------------------------------- */
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: step;
+  display: grid;
+  gap: var(--s-6) var(--s-5);
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+
+.steps li {
+  counter-increment: step;
+  border-top: var(--s-1) solid var(--c-accent);
+  padding-top: var(--s-4);
+}
+
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  display: block;
+  font-family: var(--f-display);
+  font-size: var(--t-num);
+  font-weight: var(--w-medium);
+  line-height: 1;
+  letter-spacing: var(--ls-display);
+  margin-bottom: var(--s-4);
+}
+
+/* ---------------------------------------------------------------------
+   Stat device (the 60-mile radius, homepage service area)
+   One sourced fact pulled out at specimen scale, the way a colour card
+   prints its number. The words are the page's own; nothing is invented.
+   --------------------------------------------------------------------- */
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+  margin-bottom: var(--s-6);
+}
+
+.stat__num {
+  font-family: var(--f-display);
+  font-size: var(--t-num);
+  font-weight: var(--w-semibold);
+  line-height: 1;
+  letter-spacing: var(--ls-display);
+  color: var(--c-accent);
+}
+
+.stat__cap {
+  font-family: var(--f-body);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  color: var(--c-text-muted);
+  max-width: 14ch;
+  line-height: var(--lh-heading);
+}
+
+/* City index. A ruled two-column register of towns instead of a bare
+   bulleted list or another card grid. */
+.city-index {
+  list-style: none;
+  margin: 0 0 var(--s-6);
+  padding: 0;
+  display: grid;
+  gap: 0 var(--s-6);
+  grid-template-columns: 1fr;
+}
+
+.city-index li {
+  border-top: var(--border-width) solid var(--c-rule);
+  padding: var(--s-3) 0;
+}
+
+.city-index a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: var(--tap-target);
+  font-weight: var(--w-medium);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.city-index a::after {
+  content: "\2192";
+  color: var(--c-accent);
+  transition: transform var(--duration) var(--ease);
+}
+
+.city-index a:hover,
+.city-index a:focus-visible {
+  color: var(--c-accent);
+}
+
+.city-index a:hover::after,
+.city-index a:focus-visible::after {
+  transform: translateX(var(--s-1));
+}
+
+@media (min-width: 768px) {
+  .city-index {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   FAQ (details/summary, no JS required)
+   --------------------------------------------------------------------- */
+
+.faq-item {
+  border-bottom: var(--border-width) solid var(--c-rule);
+}
+
+.faq-item summary {
+  cursor: pointer;
+  padding-block: var(--s-4);
+  font-family: var(--f-body);
+  font-weight: var(--w-semibold);
+  font-size: var(--t-body);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: "+";
+  flex-shrink: 0;
+  font-family: var(--f-body);
+  color: var(--c-accent);
+}
+
+.faq-item[open] summary::after {
+  content: "\2212";
+}
+
+.faq-item p:last-child {
+  padding-bottom: var(--s-4);
+  color: var(--c-text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Site header
+   Solid ink, carrying the white cut of the wordmark as BRAND-DIRECTION.md
+   section 5 intends ("danco-mark-white: header, on dark"). The header and
+   the hero band read as one continuous black field at the top of every
+   page, which is what makes the fan-deck strip under the hero land as the
+   edge of the brand block.
+   --------------------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--c-bg-inverse);
+  color: var(--c-text-inverse);
+  border-bottom: var(--border-width) solid var(--c-rule-inverse);
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-4);
+  padding-block: var(--s-3);
+}
+
+.site-header__brand {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.site-header__logo {
+  display: block;
+  width: var(--header-logo-width);
+  max-width: 45vw;
+  height: auto;
+}
+
+.site-header__quick-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.site-header__call-icon,
+.site-header__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  border-radius: var(--radius);
+  border: var(--border-width) solid transparent;
+  background: transparent;
+  color: var(--c-text-inverse);
+  cursor: pointer;
+  padding: 0;
+}
+
+.site-header__call-icon:hover,
+.site-header__toggle:hover {
+  background: var(--c-accent-deep);
+}
+
+.site-header__icon {
+  width: var(--menu-icon-size);
+  height: var(--menu-icon-size);
+}
+
+.site-header__toggle-icon {
+  position: relative;
+  display: inline-block;
+  width: var(--menu-line-width);
+  height: var(--menu-line-height);
+  background: currentColor;
+  border-radius: var(--radius-sm);
+}
+
+.site-header__toggle-icon::before,
+.site-header__toggle-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: var(--menu-line-width);
+  height: var(--menu-line-height);
+  background: currentColor;
+  border-radius: var(--radius-sm);
+  transition: transform var(--duration) var(--ease);
+}
+
+.site-header__toggle-icon::before {
+  top: calc(var(--menu-line-height) * -2.5);
+}
+
+.site-header__toggle-icon::after {
+  top: calc(var(--menu-line-height) * 2.5);
+}
+
+.site-header__toggle[aria-expanded="true"] .site-header__toggle-icon {
+  background: transparent;
+}
+
+.site-header__toggle[aria-expanded="true"] .site-header__toggle-icon::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.site-header__toggle[aria-expanded="true"] .site-header__toggle-icon::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+.site-nav {
+  display: none;
+  flex-direction: column;
+  flex-basis: 100%;
+  gap: var(--s-4);
+  padding-block: var(--s-4);
+  border-top: var(--border-width) solid var(--c-rule-inverse);
+}
+
+.site-nav.is-open {
+  display: flex;
+}
+
+.site-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav__list a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  font-family: var(--f-body);
+  font-weight: var(--w-medium);
+  color: var(--c-text-inverse);
+  text-decoration: none;
+}
+
+.site-nav__list a:hover,
+.site-nav__list a:focus-visible {
+  color: var(--c-text-inverse);
+  text-decoration: underline;
+  text-decoration-color: var(--c-accent);
+  text-decoration-thickness: var(--focus-width);
+  text-underline-offset: var(--s-2);
+}
+
+.site-nav__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.site-nav__phone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-target);
+  padding-inline: var(--s-4);
+  border: var(--border-width) solid var(--c-rule-inverse);
+  border-radius: var(--radius);
+  font-family: var(--f-body);
+  font-weight: var(--w-medium);
+  color: var(--c-text-inverse);
+  text-decoration: none;
+}
+
+.site-nav__phone:hover,
+.site-nav__phone:focus-visible {
+  border-color: var(--c-text-inverse);
+  color: var(--c-text-inverse);
+}
+
+/* The primary CTA sits on the ink header, so the ink-filled button is
+   inverted to paper here; the accent fill stays reserved for page-level
+   conversion actions. */
+.site-header .btn--primary {
+  background: var(--c-paper);
+  color: var(--c-ink);
+  border-color: var(--c-paper);
+}
+
+.site-header .btn--primary:hover,
+.site-header .btn--primary:focus-visible {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-paper);
+}
+
+@media (min-width: 1024px) {
+  .site-header__quick-actions {
+    display: none;
+  }
+
+  .site-nav {
+    display: flex !important;
+    flex-basis: auto;
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--s-6);
+    border-top: none;
+    padding-block: 0;
+  }
+
+  .site-nav__list {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-5);
+  }
+
+  .site-nav__list a {
+    min-height: auto;
+  }
+
+  .site-nav__actions {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-3);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Site footer
+   The second brand-black field, opened by the fan-deck strip. Column
+   headings set as small spec labels keyed by the green tick.
+   --------------------------------------------------------------------- */
+
+.site-footer {
+  background: var(--c-bg-inverse);
+  color: var(--c-text-inverse);
+  padding-block: var(--s-8);
+}
+
+.site-footer a {
+  color: inherit;
+}
+
+.site-footer__top {
+  display: grid;
+  gap: var(--s-6);
+  grid-template-columns: repeat(auto-fit, minmax(var(--footer-column-min), 1fr));
+}
+
+.site-footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.site-footer__logo {
+  width: var(--footer-logo-width);
+  max-width: 100%;
+  height: auto;
+}
+
+.site-footer__tagline {
+  font-family: var(--f-body);
+  font-weight: var(--w-medium);
+  font-size: var(--t-body);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.site-footer__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-family: var(--f-body);
+  font-size: var(--t-micro);
+  letter-spacing: var(--ls-micro);
+  text-transform: uppercase;
+  font-weight: var(--w-medium);
+  color: var(--c-text-inverse);
+  margin: 0 0 var(--s-3);
+}
+
+.site-footer__heading::before {
+  content: "";
+  width: var(--tick-width);
+  height: var(--s-1);
+  background: var(--c-accent);
+  flex-shrink: 0;
+}
+
+.site-footer__col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.site-footer__col a {
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.site-footer__col a:hover,
+.site-footer__col a:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+  text-decoration-color: var(--c-accent);
+  text-decoration-thickness: var(--focus-width);
+  text-underline-offset: var(--s-2);
+}
+
+.site-footer address p {
+  margin: 0 0 var(--s-2);
+  opacity: 0.85;
+}
+
+.site-footer__cta {
+  margin-top: var(--s-4);
+  align-self: flex-start;
+}
+
+.site-footer__trust {
+  border-top: var(--border-width) solid var(--c-rule-inverse);
+  margin-top: var(--s-7);
+  padding-top: var(--s-5);
+}
+
+.site-footer__bottom {
+  margin-top: var(--s-5);
+  font-size: var(--t-micro);
+  color: var(--c-text-inverse);
+  opacity: 0.7;
+}
+
+/* ---------------------------------------------------------------------
+   Breakpoint checkpoints (informational)
+   375px  -- base mobile styles above apply as-is.
+   768px  -- tokens.css itself steps --t-display/--t-h1/--t-h2/--t-num/
+             --section-y/--gutter down at this width; the city index opens
+             to two columns; header/footer grids widen via auto-fit.
+   1440px -- .container caps at --container (1160px) and centers; the
+             1024px component breakpoint above has already switched the
+             header to its horizontal desktop layout.
+   --------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------
+   WP4: explicit homepage grounds, rhythm tiers, and cut-in seams
+   ART-SPEC-v2 section 3 assigns both a ground and a tier to every section.
+   The cut-line class belongs only on the Instagram and estimate sections.
+   --------------------------------------------------------------------- */
+
+.section-ground--paper {
+  background: var(--c-paper);
+  color: var(--c-ink);
+}
+
+.section-ground--paper-warm {
+  background: var(--c-paper-warm);
+  color: var(--c-ink);
+}
+
+.section-ground--ink {
+  background: var(--c-ink);
+  color: var(--c-paper);
+}
+
+.section-ground--accent {
+  background: var(--c-accent);
+  color: var(--c-paper);
+}
+
+.section-ground--ink h1,
+.section-ground--ink h2,
+.section-ground--ink h3,
+.section-ground--ink a,
+.section-ground--accent h1,
+.section-ground--accent h2,
+.section-ground--accent h3,
+.section-ground--accent a {
+  color: var(--c-paper);
+}
+
+.section-rhythm--hero {
+  padding-block: var(--section-y-hero);
+}
+
+.section-rhythm--major {
+  padding-block: var(--section-y-major);
+}
+
+.section-rhythm--standard {
+  padding-block: var(--section-y-standard);
+}
+
+.section-rhythm--tight {
+  padding-block: var(--section-y-tight);
+}
+
+.hero.section-rhythm--hero {
+  padding-block: 0;
+}
+
+.hero.section-rhythm--hero .hero__band {
+  padding-block: var(--section-y-hero);
+}
+
+.cut-line--top {
+  border-top: var(--cut-line) solid var(--cut-line-color);
+}
+
+/* ---------------------------------------------------------------------
+   WP5: homepage service paint chips
+   Pigment fills carry service meaning; hard colour edges replace borders.
+   --------------------------------------------------------------------- */
+
+/* Four services, four chips, one row. auto-fit fitted only three per row at
+   desktop and orphaned Power Washing on a row of its own, which read as a
+   broken grid rather than a deliberate one. An explicit count also lines the
+   four pigment blocks up edge to edge, so the row reads as a fan deck. */
+.paint-chip-grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .paint-chip-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Hold the 2x2 until there is genuinely room for four readable columns.
+   At 1024 the four-up cards fall to about 226px, which is too cramped. */
+@media (min-width: 1200px) {
+  .paint-chip-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.paint-chip {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  background: var(--c-paper);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+.paint-chip__swatch {
+  flex: 0 0 var(--paint-chip-swatch-height);
+  height: var(--paint-chip-swatch-height);
+  background: var(--paint-chip-color);
+  color: var(--paint-chip-swatch-type, var(--c-paper));
+  border-radius: 0;
+}
+
+.paint-chip__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--s-5);
+}
+
+.paint-chip__body > :last-child {
+  margin-bottom: 0;
+}
+
+.paint-chip--cabinet {
+  --paint-chip-color: var(--c-accent);
+}
+
+.paint-chip--exterior {
+  --paint-chip-color: var(--c-pigment-sienna);
+}
+
+.paint-chip--interior {
+  --paint-chip-color: var(--c-pigment-ochre);
+}
+
+.paint-chip--epoxy {
+  --paint-chip-color: var(--c-ink);
+}
+
+.paint-chip--power-washing {
+  --paint-chip-color: var(--c-pigment-bone);
+  --paint-chip-swatch-type: var(--c-ink);
+}
+
+.paint-chip--featured {
+  grid-column: 1 / -1;
+  min-height: auto;
+  margin-bottom: 0;
+  background: var(--c-accent);
+  color: var(--c-paper);
+  border: none;
+  box-shadow: none;
+}
+
+.paint-chip--featured h3,
+.paint-chip--featured a {
+  color: var(--c-paper);
+}
+
+.paint-chip--featured .btn--secondary:hover,
+.paint-chip--featured .btn--secondary:focus-visible {
+  background: var(--c-paper);
+  border-color: var(--c-paper);
+  color: var(--c-accent);
+}
+
+/* ---------------------------------------------------------------------
+   WP1 — Hero colour field and work panel
+   Spec: .council/ART-SPEC-v2.md §4 and §6.
+
+   The hero is a two-field composition: ink on the left carrying the type,
+   a solid field of brand green on the right, meeting at a hard vertical
+   edge that carries the ochre cut line. That edge is a painter's cut-in
+   rendered in CSS, and it is the reason this page needs no photograph to
+   look finished.
+   --------------------------------------------------------------------- */
+
+.hero__band {
+  position: relative;
+}
+
+.hero__field {
+  background: var(--c-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero__mark {
+  width: 96px;
+  height: auto;
+  display: block;
+}
+
+/* Below 1024px the green field becomes a full-bleed band under the copy,
+   and the cut line rotates to its top edge. */
+@media (max-width: 1023px) {
+  .hero.section-rhythm--hero .hero__band {
+    padding-bottom: 0;
+  }
+
+  .hero__field {
+    margin-top: var(--section-y-hero);
+    height: 180px;
+    border-top: var(--cut-line) solid var(--cut-line-color);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero.section-rhythm--hero .hero__band {
+    display: grid;
+    grid-template-columns: 1fr 38%;
+    align-items: center;
+    padding-block: 0;
+    min-height: 32rem;
+  }
+
+  /* Line the headline's left edge up with the site container's left edge
+     rather than centring it inside the narrower left column. */
+  .hero__content.container {
+    max-width: none;
+    margin: 0;
+    padding-block: var(--section-y-hero);
+    padding-left: max(var(--gutter), calc((100vw - var(--container)) / 2));
+    padding-right: var(--s-7);
+  }
+
+  .hero__field {
+    align-self: stretch;
+    border-left: var(--cut-line) solid var(--cut-line-color);
+  }
+
+  .hero__mark {
+    width: 140px;
+  }
+}
+
+/* Work panel: the honest replacement for the old placeholder tiles. */
+.work-panel__inner {
+  text-align: center;
+}
+
+.work-panel__mark {
+  width: 64px;
+  height: auto;
+  display: block;
+  margin: 0 auto var(--s-5);
+}
+
+.work-panel__inner > h2 {
+  margin-top: 0;
+}
+
+.work-panel__inner > p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---------------------------------------------------------------------
+   Inner-page hero -- ART-SPEC-v2-INNER section 1
+
+   The same two-field composition as the homepage: ink carrying the type,
+   a solid field of brand green, meeting at a hard vertical edge that
+   carries the ochre cut line. Reduced scale (32% field, 22rem band, 104px
+   mark) so every inner page is recognisably the same building without any
+   of them out-shouting the homepage's 38%/32rem/140px statement.
+   --------------------------------------------------------------------- */
+
+.hero--page.section-rhythm--major {
+  padding-block: 0;
+}
+
+.hero--page .hero__band {
+  padding-block: var(--section-y-major);
+}
+
+@media (max-width: 1023px) {
+  .hero--page .hero__band {
+    padding-bottom: 0;
+  }
+
+  .hero--page .hero__field {
+    margin-top: var(--section-y-major);
+    height: 120px;
+    border-top: var(--cut-line) solid var(--cut-line-color);
+  }
+
+  .hero--page .hero__mark {
+    width: 72px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero--page .hero__band {
+    display: grid;
+    grid-template-columns: 1fr 32%;
+    align-items: center;
+    padding-block: 0;
+    min-height: 22rem;
+  }
+
+  .hero--page .hero__content.container {
+    max-width: none;
+    margin: 0;
+    padding-block: var(--section-y-major);
+    padding-left: max(var(--gutter), calc((100vw - var(--container)) / 2));
+    padding-right: var(--s-7);
+  }
+
+  .hero--page .hero__field {
+    align-self: stretch;
+    border-left: var(--cut-line) solid var(--cut-line-color);
+  }
+
+  .hero--page .hero__mark {
+    width: 104px;
+  }
+}

@@ -1,0 +1,62 @@
+/*
+ * Self-hosted webfonts for Danco Painting LLC.
+ *
+ * BRAND-DIRECTION.md section 3 specifies Zilla Slab for the display voice and
+ * IBM Plex Sans for body and UI, self-hosted as woff2. Both are SIL Open Font
+ * License, which permits redistribution and self-hosting.
+ *
+ * Zilla Slab replaced Bodoni Moda. Bodoni is a didone, and a didone's defining
+ * trait is extreme thick-to-hairline modulation, which argues against the whole
+ * design thesis in ART-SPEC-v2: every colour boundary on this site is a hard,
+ * unapologetic painter's cut-in, and "the crispness is the argument." Delicate
+ * fashion-editorial type undercut that, read as boutique rather than trade to
+ * the customer Danco actually wants, and needed a documented 28px minimum size
+ * to stop its hairlines breaking up. Zilla Slab's serifs are blunt rectangles
+ * that hold at any size, and slabs carry genuine workwear and signage heritage.
+ *
+ * Google Fonts is never linked. That is a hard constraint, not a preference:
+ * a render-blocking third-party font request is the usual reason a mobile
+ * performance target is missed, and each page here must stay self-contained.
+ *
+ * IBM Plex Sans is a VARIABLE font. Google serves one file covering the whole
+ * weight axis, so declaring weights 500/600/700 separately downloaded the
+ * identical file three times. One @font-face with a weight RANGE gets the same
+ * rendering for a third of the payload: 269KB down to 96KB.
+ *
+ * Zilla Slab ships as static cuts rather than a variable font, so it needs one
+ * file per weight. Only two are declared because only two are used: 500 for
+ * section headings and spec numerals, 600 for the hero headline. Declaring a
+ * range against a single static file would make the browser synthesise the
+ * other weight, which smears a slab's stem/serif joins. Grep --f-display in
+ * site.css before adding a third weight; if a rule needs one, ship the real cut.
+ *
+ * Latin subset only. Regenerate with scratchpad get-fonts.js if the range or
+ * weights ever need to change.
+ */
+
+@font-face {
+  font-family: "Zilla Slab";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/assets/fonts/zilla-slab-500-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Zilla Slab";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/assets/fonts/zilla-slab-600-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url("/assets/fonts/ibm-plex-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
